@@ -1,0 +1,3 @@
+[submodule "Vendor/ApnsPHP"]
+	path = Vendor/ApnsPHP
+	url = https://github.com/pyodor/ApnsPHP.git

@@ -1,6 +1,6 @@
 <?php
 App::uses('Component', 'Controller');
-require_once(App::pluginPath('CakeApns') . 'Vendor' . DS . 'ApnsPHP' . DS .'Autoload.php');
+require_once(App::pluginPath('CakeApns') . 'Vendor' . DS . 'ApnsPHP' . DS .'ApnsPHP' . DS .'Autoload.php');
 
 class ApnsComponent extends Component {
 	public $env;
