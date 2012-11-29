@@ -36,16 +36,16 @@ Activate the plugin, in your ``myapp/Config/bootstrap.php`` add this::
 Configure you APNS certificates in your ``myapp/Config/core.php``::
 
     Configure::write('CakeApns', array(
-    'mode' => 'sandbox',
-    'sandbox' => array(
-        'combined_certificates' => APP . 'Certificates' . DS . 'combined.pem',
-        'cert_passphrase' => 'lightning@sg'
-    ),
-    'production' => array(
-        'combined_certificates' => APP . 'Certificates' . DS . 'combined.pem',
-        'cert_passphrase' => 'lightning@sg'
-    )
-));
+        'mode' => 'sandbox',
+        'sandbox' => array(
+            'combined_certificates' => APP . 'Certificates' . DS . 'combined.pem',
+            'cert_passphrase' => 'lightning@sg'
+        ),
+        'production' => array(
+            'combined_certificates' => APP . 'Certificates' . DS . 'combined.pem',
+            'cert_passphrase' => 'lightning@sg'
+        )
+    ));
 
 
 Usage
