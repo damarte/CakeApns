@@ -29,7 +29,7 @@ class ApnsComponent extends Component {
             : ApnsPHP_Abstract::ENVIRONMENT_PRODUCTION;
     }
 
-    public function startup($controller) {
+    public function startup() {
         $this->__loadConfig();
         if(!file_exists($this->combined_cert_path)) {
 			throw new CakeException(__("Certification at $this->combined_cert_path does not exist."));
