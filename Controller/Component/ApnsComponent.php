@@ -50,6 +50,11 @@ class ApnsComponent extends Component {
 		$message->setExpiry(isset($options['identifier'])
 			? $options['expiry'] : $this->expiry);
 
+        if(isset($options['custom_properties'])) {
+            foreach($options['custom_properties'] as $key => $property) {
+                $message->setCustomProperty($key, $property);
+            }
+        }
 		$push->add($message);
 		$push->send();
 
