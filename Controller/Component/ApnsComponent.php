@@ -36,7 +36,7 @@ class ApnsComponent extends Component {
         }
 	}
 
-    public function push($device_token, $text, $options = array()) {
+    public function push($device_token, $text, $options = array(), $sound='default') {
         $push = new ApnsPHP_Push($this->env, $this->combined_cert_path);
         $push->setProviderCertificatePassphrase($this->cert_passphrase);
 
@@ -55,7 +55,9 @@ class ApnsComponent extends Component {
                 $message->setCustomProperty($key, $property);
             }
         }
-		$push->add($message);
+        $message->setSound($sound);
+        
+        $push->add($message);
 		$push->send();
 
 		$push->disconnect();
