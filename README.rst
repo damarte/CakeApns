@@ -61,6 +61,13 @@ Add CakeApns as component in your controller and send a message::
         $this->Apns->push('device token', 'message')
     }
 
+Adding custom properties and custom sound::
+        
+    $options = array('custom_properties' => array('my_property'=>'my_value'));
+    $sound = 'my_custom_sound.aiff';
+    
+    $this->Apns->push('device token', 'message', $options, $sound);
+
 
 License
 -------
