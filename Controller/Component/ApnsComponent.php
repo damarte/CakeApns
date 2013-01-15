@@ -10,7 +10,8 @@ class ApnsComponent extends Component {
     public $cert_passphrase;
 
 	public $identifier = 'CakeApns';
-	public $expiry = 30;
+    public $expiry = 30;
+    private $__logEnabled = false;
 
     private function __loadConfig() {
         $apns = Configure::read('CakeApns');
@@ -29,6 +30,12 @@ class ApnsComponent extends Component {
             : ApnsPHP_Abstract::ENVIRONMENT_PRODUCTION;
     }
 
+    public function __construct(ComponentCollection $collection, $settings = array()) {
+        parent::__construct($collection, $settings);
+        if(isset($settings['logEnabled'])) 
+            $this->__logEnabled = $settings['logEnabled'] ;
+    }
+
     public function startup() {
         $this->__loadConfig();
         if(!file_exists($this->combined_cert_path)) {
@@ -39,6 +46,9 @@ class ApnsComponent extends Component {
     public function push($device_token, $text, $options = array(), $sound='default') {
         $push = new ApnsPHP_Push($this->env, $this->combined_cert_path);
         $push->setProviderCertificatePassphrase($this->cert_passphrase);
+
+        $logger = new ApnsPHP_Log_Custom(!$this->__logEnabled); 
+        $push->setLogger($logger);
 
 		$push->connect();
 

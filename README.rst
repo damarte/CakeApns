@@ -61,6 +61,12 @@ Add CakeApns as component in your controller and send a message::
         $this->Apns->push('device token', 'message')
     }
 
+By default logging were disabled if you want to see the logs returned by APNS::
+
+    public $components = array(
+        'CakeApns.Apns' => array('logEnabled' => true),
+    );
+
 Adding custom properties and custom sound::
         
     $options = array('custom_properties' => array('my_property'=>'my_value'));
