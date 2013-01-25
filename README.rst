@@ -75,6 +75,13 @@ Adding custom properties and custom sound::
     $this->Apns->push('device token', 'message', $options, $sound);
 
 
+Sending messages in one push::
+
+    $this->Apns->add('device token', 'message', $options, $sound);
+    $this->Apns->add('antoher device token', 'message', $options, $sound);
+    ...
+    $this->pushMany();
+    
 License
 -------
 

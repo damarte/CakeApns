@@ -12,6 +12,8 @@ class ApnsComponent extends Component {
 	public $identifier = 'CakeApns';
     public $expiry = 30;
     private $__logEnabled = false;
+    private $__push;
+    private $__queueCount = 0;
 
     private function __loadConfig() {
         $apns = Configure::read('CakeApns');
@@ -36,6 +38,20 @@ class ApnsComponent extends Component {
             $this->__logEnabled = $settings['logEnabled'] ;
     }
 
+    private function __connect() {
+        if(!$this->__push) { 
+            $this->__push = new ApnsPHP_Push($this->env, $this->combined_cert_path);
+            $this->__push->setProviderCertificatePassphrase($this->cert_passphrase);
+
+            $logger = new ApnsPHP_Log_Custom(!$this->__logEnabled); 
+            $this->__push->setLogger($logger);
+
+            $this->__push->connect();
+            return $this->__logError();
+        }
+        return true;
+    }
+
     public function startup() {
         $this->__loadConfig();
         if(!file_exists($this->combined_cert_path)) {
@@ -43,50 +59,76 @@ class ApnsComponent extends Component {
         }
 	}
 
-    public function push($device_token, $text, $options = array(), $sound='default') {
-        $push = new ApnsPHP_Push($this->env, $this->combined_cert_path);
-        $push->setProviderCertificatePassphrase($this->cert_passphrase);
-
-        $logger = new ApnsPHP_Log_Custom(!$this->__logEnabled); 
-        $push->setLogger($logger);
-
-		$push->connect();
-
-		$message = new ApnsPHP_Message($device_token);
+    private function __queue($device_token, $text, $options = array(), $sound='default') {
+        $this->__connect();
+        $message = new ApnsPHP_Message($device_token);
 		$message->setText($text);
-
 		$message->setCustomIdentifier(isset($options['identifier'])
 			? $options['identifier'] : $this->identifier);
 		$message->setExpiry(isset($options['identifier'])
 			? $options['expiry'] : $this->expiry);
-
         if(isset($options['custom_properties'])) {
             foreach($options['custom_properties'] as $key => $property) {
                 $message->setCustomProperty($key, $property);
             }
         }
         $message->setSound($sound);
-        
-        $push->add($message);
-		$push->send();
+        $this->__push->add($message);
+    }
 
-		$push->disconnect();
+    public function add($device_token, $text, $options = array(), $sound='default') {
+        $this->__connect();
+        try {
+            $this->__queue($device_token, $text, $options, $sound);
+            $this->__queueCount += 1;
+        }
+        catch(ApnsPHP_Message_Exception $e) {
+            $this->__logError($e->getMessage());
+            throw new CakeException($e->getMessage());
+        }
+    }
 
-		$error = $push->getErrors();
-		if(empty($error)) {
-			return true;
-		} else {
-			Debugger::log($error);
-			return false;
-		}
+    public function pushMany() {
+        if($this->__queueCount) {
+		    $this->__push->send();
+		    $this->__push->disconnect();
+            return $this->__logError();
+        }
+        throw new CakeException('Nothing to send in bulk queue is empty');    
+    }
+
+    public function push($device_token, $text, $options = array(), $sound='default') {
+        $this->__connect();
+        try {
+            $this->__queue($device_token, $text, $options, $sound);
+        }
+        catch(ApnsPHP_Message_Exception $e) {
+            $this->__logError($e->getMessage());
+            throw new CakeException($e->getMessage());
+        }
+		$this->__push->send();
+		$this->__push->disconnect();
+	    return $this->__logError();	
 	}
 
-	public function feedback() {
+    private function __logError($otherError=null) {
+        if(!$this->__push) return false;
+        $errors = $this->__push->getErrors();
+        if($otherError) $errors[] = $otherError;
+		if(empty($errors)) {
+			return true;
+		} else {
+            CakeLog::write(__CLASS__, json_encode($errors));
+			return false;
+		}
+    }
+
+	/*public function feedback() {
 		$feedback = new ApnsPHP_Feedback($env, $this->combined_cert_path);
 		$feedback->connect();
 		$error = $feedback->receive();
 		$feedback->disconnect();
 		return $error;
-	}
+    }*/
 
 }
