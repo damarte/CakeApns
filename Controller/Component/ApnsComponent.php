@@ -14,6 +14,8 @@ class ApnsComponent extends Component {
     private $__logEnabled = false;
     private $__push;
     private $__queueCount = 0;
+    private $__sendRetryTimes = 3;
+    private $__errors = array();
 
     private function __loadConfig() {
         $apns = Configure::read('CakeApns');
@@ -38,6 +40,14 @@ class ApnsComponent extends Component {
             $this->__logEnabled = $settings['logEnabled'] ;
     }
 
+    public function setSendRetryTimes($times=3) {
+        $this->__sendRetryTimes = $times;
+    }
+    
+    public function getSendRetryTimes() {
+        return $this->__sendRetryTimes;
+    }
+
     private function __connect() {
         if(!$this->__push) { 
             $this->__push = new ApnsPHP_Push($this->env, $this->combined_cert_path);
@@ -45,7 +55,7 @@ class ApnsComponent extends Component {
 
             $logger = new ApnsPHP_Log_Custom(!$this->__logEnabled); 
             $this->__push->setLogger($logger);
-
+            //$this->__push->setSendRetryTimes($this->__sendRetryTimes);
             $this->__push->connect();
             return $this->__logError();
         }
@@ -84,7 +94,6 @@ class ApnsComponent extends Component {
         }
         catch(ApnsPHP_Message_Exception $e) {
             $this->__logError($e->getMessage());
-            throw new CakeException($e->getMessage());
         }
     }
 
@@ -104,12 +113,15 @@ class ApnsComponent extends Component {
         }
         catch(ApnsPHP_Message_Exception $e) {
             $this->__logError($e->getMessage());
-            throw new CakeException($e->getMessage());
         }
 		$this->__push->send();
 		$this->__push->disconnect();
 	    return $this->__logError();	
 	}
+
+    public function getErrors() {
+        return $this->__errors;
+    }
 
     private function __logError($otherError=null) {
         if(!$this->__push) return false;
@@ -117,7 +129,8 @@ class ApnsComponent extends Component {
         if($otherError) $errors[] = $otherError;
 		if(empty($errors)) {
 			return true;
-		} else {
+        } else {
+            $this->__errors = $errors;
             CakeLog::write(__CLASS__, json_encode($errors));
 			return false;
 		}
