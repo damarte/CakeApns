@@ -80,7 +80,7 @@ Sending messages in one push::
     $this->Apns->add('device token', 'message', $options, $sound);
     $this->Apns->add('antoher device token', 'message', $options, $sound);
     ...
-    $this->pushMany();
+    $this->Apns->pushMany();
     
 License
 -------
