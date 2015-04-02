@@ -62,7 +62,7 @@ class ApnsComponent extends Component {
         return true;
     }
 
-    public function startup() {
+    public function startup(Controller $controller) {
         $this->__loadConfig();
         if(!file_exists($this->combined_cert_path)) {
 			throw new CakeException(__("Certification at $this->combined_cert_path does not exist."));
